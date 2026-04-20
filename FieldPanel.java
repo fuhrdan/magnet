@@ -1,0 +1,159 @@
+package magnet;
+
+import javax.swing.JPanel;
+import javax.swing.Timer;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseEvent;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Random;
+
+public class FieldPanel extends JPanel implements MouseListener, MouseMotionListener
+{
+    private List<FieldSource> sources;
+    private List<Particle> particles;
+
+    private Dipole selected = null;
+
+    public FieldPanel(List<FieldSource> sources)
+    {
+        this.sources = sources;
+        this.particles = new ArrayList<>();
+
+        setBackground(Color.black);
+
+        addMouseListener(this);
+        addMouseMotionListener(this);
+
+        // create particles
+        Random rand = new Random();
+        for (int i = 0; i < 1500; i++)
+        {
+            double x = (rand.nextDouble() - 0.5) * 20;
+            double y = (rand.nextDouble() - 0.5) * 20;
+            particles.add(new Particle(x, y));
+        }
+
+        // animation timer (~60 FPS)
+        Timer timer = new Timer(16, e -> {
+            updateParticles();
+            repaint();
+        });
+        timer.start();
+    }
+
+    private void updateParticles()
+    {
+        for (Particle p : particles)
+        {
+            p.update(sources);
+
+            // reset if too far away
+            if (Math.abs(p.x) > 20 || Math.abs(p.y) > 20)
+            {
+                p.x = (Math.random() - 0.5) * 20;
+                p.y = (Math.random() - 0.5) * 20;
+            }
+        }
+    }
+
+    @Override
+    protected void paintComponent(Graphics g)
+    {
+        // TRAIL EFFECT (comment this out if you want a clean redraw)
+        g.setColor(new Color(0, 0, 0, 40));
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        Graphics2D g2 = (Graphics2D) g;
+
+        int width = getWidth();
+        int height = getHeight();
+
+        // draw particles
+        g2.setColor(Color.green);
+
+        for (Particle p : particles)
+        {
+            int sx = (int)(width / 2 + p.x * 30);
+            int sy = (int)(height / 2 + p.y * 30);
+
+            g2.fillRect(sx, sy, 2, 2);
+        }
+
+        // draw magnets
+        g2.setColor(Color.red);
+
+        for (FieldSource s : sources)
+        {
+            if (s instanceof Dipole)
+            {
+                Dipole d = (Dipole)s;
+
+                int sx = (int)(width / 2 + d.x * 30);
+                int sy = (int)(height / 2 + d.y * 30);
+
+                g2.fillOval(sx - 6, sy - 6, 12, 12);
+            }
+        }
+    }
+
+    // =========================
+    // MOUSE INTERACTION
+    // =========================
+
+    @Override
+    public void mousePressed(MouseEvent e)
+    {
+        double wx = (e.getX() - getWidth() / 2.0) / 30.0;
+        double wy = (e.getY() - getHeight() / 2.0) / 30.0;
+
+        double minDist = Double.MAX_VALUE;
+
+        for (FieldSource s : sources)
+        {
+            if (s instanceof Dipole)
+            {
+                Dipole d = (Dipole)s;
+
+                double dx = d.x - wx;
+                double dy = d.y - wy;
+                double dist = dx*dx + dy*dy;
+
+                if (dist < minDist && dist < 1.0)
+                {
+                    minDist = dist;
+                    selected = d;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e)
+    {
+        if (selected != null)
+        {
+            selected.x = (e.getX() - getWidth() / 2.0) / 30.0;
+            selected.y = (e.getY() - getHeight() / 2.0) / 30.0;
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e)
+    {
+        selected = null;
+    }
+
+    // required but unused
+    @Override public void mouseClicked(MouseEvent e) {}
+    @Override public void mouseEntered(MouseEvent e) {}
+    @Override public void mouseExited(MouseEvent e) {}
+    @Override public void mouseMoved(MouseEvent e) {}
+}

@@ -1,0 +1,19 @@
+# Java and IDE-specific files
+*.class
+*.jar
+*.log
+*.dll
+*.so
+*.dylib
+*.exe
+/.idea/
+/out/
+/target/
+*.iml
+
+# OpenCV native files (these can be large, and you may want to download them separately)
+opencv/build/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
