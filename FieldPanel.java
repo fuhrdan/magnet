@@ -10,12 +10,17 @@ import java.awt.Graphics2D;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.KeyEvent;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class FieldPanel extends JPanel implements MouseListener, MouseMotionListener
+public class FieldPanel extends JPanel implements 
+    MouseListener, 
+    MouseMotionListener, 
+    KeyListener
 {
     private List<FieldSource> sources;
     private List<Particle> particles;
@@ -31,6 +36,8 @@ public class FieldPanel extends JPanel implements MouseListener, MouseMotionList
 
         addMouseListener(this);
         addMouseMotionListener(this);
+        setFocusable(true);
+        addKeyListener(this);
 
         // create particles
         Random rand = new Random();
@@ -61,6 +68,22 @@ public class FieldPanel extends JPanel implements MouseListener, MouseMotionList
                 p.x = (Math.random() - 0.5) * 20;
                 p.y = (Math.random() - 0.5) * 20;
             }
+        }
+    }
+
+    public void addMagnet()
+    {
+        Dipole d = new Dipole(0, 0, 1, 0);
+        sources.add(d);
+        selected = d;
+    }
+    
+    public void removeSelected()
+    {
+        if (selected != null)
+        {
+            sources.remove(selected);
+            selected = null;
         }
     }
 
@@ -111,6 +134,7 @@ public class FieldPanel extends JPanel implements MouseListener, MouseMotionList
     @Override
     public void mousePressed(MouseEvent e)
     {
+        requestFocusInWindow();
         double wx = (e.getX() - getWidth() / 2.0) / 30.0;
         double wy = (e.getY() - getHeight() / 2.0) / 30.0;
 
@@ -151,7 +175,21 @@ public class FieldPanel extends JPanel implements MouseListener, MouseMotionList
         selected = null;
     }
 
-    // required but unused
+    @Override
+    public void keyPressed(KeyEvent e)
+    {
+        if (e.getKeyCode() == KeyEvent.VK_INSERT)
+        {
+            addMagnet();
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_DELETE)
+        {
+            removeSelected();
+        }
+    }
+
+    @Override public void keyReleased(KeyEvent e) {}
+    @Override public void keyTyped(KeyEvent e) {}    // required but unused
     @Override public void mouseClicked(MouseEvent e) {}
     @Override public void mouseEntered(MouseEvent e) {}
     @Override public void mouseExited(MouseEvent e) {}
