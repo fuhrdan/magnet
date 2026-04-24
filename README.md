@@ -1,7 +1,9 @@
 # Magnetic Field Visualizer (Java)
 
-An interactive magnetic field simulator built in Java using Swing.  It's fun
+An interactive magnetic field simulator built in Java using Swing.
+
 ![Demo](screenshot.png)
+
 ## Features
 
 - Real-time magnetic field visualization
@@ -10,6 +12,13 @@ An interactive magnetic field simulator built in Java using Swing.  It's fun
 - Dynamic field updates
 - Smooth particle trails (ferrofluid-style effect)
 
+## Controls
+
+- Left Click + Drag → Move magnets  
+- Insert → Add magnet  
+- Delete → Remove selected magnet  
+- Buttons → Add/Delete magnets
+- 
 ## Demo
 
 Move magnets around and watch the field reconfigure in real time.
