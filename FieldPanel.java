@@ -25,36 +25,41 @@ public class FieldPanel extends JPanel implements
     private List<FieldSource> sources;
     private List<Particle> particles;
 
-    private Dipole selected = null;
+    private ControlPanel controlPanel;
+    private int selectedIndex = -1;
+    private int magnetCounter = 1;
 
-    public FieldPanel(List<FieldSource> sources)
+public FieldPanel(List<FieldSource> sources)
+{
+    this.sources = sources;
+    this.particles = new ArrayList<>();
+
+    setBackground(Color.black);
+
+    addMouseListener(this);
+    addMouseMotionListener(this);
+    setFocusable(true);
+    addKeyListener(this);
+
+    Random rand = new Random();
+    for (int i = 0; i < 1500; i++)
     {
-        this.sources = sources;
-        this.particles = new ArrayList<>();
-
-        setBackground(Color.black);
-
-        addMouseListener(this);
-        addMouseMotionListener(this);
-        setFocusable(true);
-        addKeyListener(this);
-
-        // create particles
-        Random rand = new Random();
-        for (int i = 0; i < 1500; i++)
-        {
-            double x = (rand.nextDouble() - 0.5) * 20;
-            double y = (rand.nextDouble() - 0.5) * 20;
-            particles.add(new Particle(x, y));
-        }
-
-        // animation timer (~60 FPS)
-        Timer timer = new Timer(16, e -> {
-            updateParticles();
-            repaint();
-        });
-        timer.start();
+        double x = (rand.nextDouble() - 0.5) * 20;
+        double y = (rand.nextDouble() - 0.5) * 20;
+        particles.add(new Particle(x, y));
     }
+
+    Timer timer = new Timer(16, e -> {
+        updateParticles();
+        repaint();
+    });
+    timer.start();
+}
+
+public void setControlPanel(ControlPanel cp)
+{
+    this.controlPanel = cp;
+}
 
     private void updateParticles()
     {
@@ -71,19 +76,39 @@ public class FieldPanel extends JPanel implements
         }
     }
 
+    private Dipole getSelected()
+    {
+        if (selectedIndex >= 0 && selectedIndex < sources.size())
+        {
+            return (Dipole)sources.get(selectedIndex);
+        }
+        return null;
+    }
+
     public void addMagnet()
     {
-        Dipole d = new Dipole(0, 0, 1, 0);
+        Dipole d = new Dipole(0, 0, 1, 0, "Magnet " + magnetCounter++);
         sources.add(d);
-        selected = d;
+        selectedIndex = sources.size() - 1;
+        controlPanel.setSelected(d);
     }
     
     public void removeSelected()
     {
-        if (selected != null)
+        if (selectedIndex >= 0 && selectedIndex < sources.size())
         {
-            sources.remove(selected);
-            selected = null;
+            sources.remove(selectedIndex);
+
+            if (sources.size() == 0)
+            {
+                selectedIndex = -1;
+                controlPanel.setSelected(null);
+            }
+            else
+            {
+                selectedIndex = Math.min(selectedIndex, sources.size() - 1);
+                controlPanel.setSelected(getSelected());
+            }
         }
     }
 
@@ -110,14 +135,19 @@ public class FieldPanel extends JPanel implements
             g2.fillRect(sx, sy, 2, 2);
         }
 
-        // draw magnets
-        g2.setColor(Color.red);
-
-        for (FieldSource s : sources)
+        // draw magnets (with selection highlight)
+        for (int i = 0; i < sources.size(); i++)
         {
-            if (s instanceof Dipole)
+            Dipole d = (Dipole)sources.get(i);
+    
+            if (i == selectedIndex)
             {
-                Dipole d = (Dipole)s;
+                g2.setColor(Color.yellow); // selected
+            }
+            else
+            {
+                g2.setColor(Color.red); // normal
+            }
 
                 int sx = (int)(width / 2 + d.x * 30);
                 int sy = (int)(height / 2 + d.y * 30);
@@ -125,7 +155,6 @@ public class FieldPanel extends JPanel implements
                 g2.fillOval(sx - 6, sy - 6, 12, 12);
             }
         }
-    }
 
     // =========================
     // MOUSE INTERACTION
@@ -135,45 +164,46 @@ public class FieldPanel extends JPanel implements
     public void mousePressed(MouseEvent e)
     {
         requestFocusInWindow();
+
         double wx = (e.getX() - getWidth() / 2.0) / 30.0;
         double wy = (e.getY() - getHeight() / 2.0) / 30.0;
 
+        selectedIndex = -1;
         double minDist = Double.MAX_VALUE;
 
-        for (FieldSource s : sources)
+        for (int i = 0; i < sources.size(); i++)
         {
-            if (s instanceof Dipole)
+            Dipole d = (Dipole)sources.get(i);
+
+            double dx = d.x - wx;
+            double dy = d.y - wy;
+            double dist = dx*dx + dy*dy;
+
+            if (dist < minDist && dist < 1.0)
             {
-                Dipole d = (Dipole)s;
-
-                double dx = d.x - wx;
-                double dy = d.y - wy;
-                double dist = dx*dx + dy*dy;
-
-                if (dist < minDist && dist < 1.0)
-                {
-                    minDist = dist;
-                    selected = d;
-                }
+                minDist = dist;
+                selectedIndex = i;
             }
         }
+
+        controlPanel.setSelected(getSelected());
     }
+
+    @Override
+    public void mouseReleased(MouseEvent e){}
 
     @Override
     public void mouseDragged(MouseEvent e)
     {
-        if (selected != null)
+        Dipole d = getSelected();
+
+        if (d != null)
         {
-            selected.x = (e.getX() - getWidth() / 2.0) / 30.0;
-            selected.y = (e.getY() - getHeight() / 2.0) / 30.0;
+            d.x = (e.getX() - getWidth() / 2.0) / 30.0;
+            d.y = (e.getY() - getHeight() / 2.0) / 30.0;
         }
     }
 
-    @Override
-    public void mouseReleased(MouseEvent e)
-    {
-        selected = null;
-    }
 
     @Override
     public void keyPressed(KeyEvent e)
@@ -185,6 +215,15 @@ public class FieldPanel extends JPanel implements
         else if (e.getKeyCode() == KeyEvent.VK_DELETE)
         {
             removeSelected();
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_TAB)
+        {
+            if (sources.size() > 0)
+            {
+                selectedIndex = (selectedIndex + 1) % sources.size();
+                controlPanel.setSelected(getSelected());
+                repaint();
+            }
         }
     }
 

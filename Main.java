@@ -2,8 +2,6 @@ package magnet;
 
 import javax.swing.*;
 import java.util.*;
-import javax.swing.JButton;
-import javax.swing.JPanel;
 import java.awt.BorderLayout;
 
 public class Main
@@ -12,33 +10,27 @@ public class Main
     {
         List<FieldSource> sources = new ArrayList<>();
 
-        // classic dipole pair
-        sources.add(new Dipole(-2, 0, 1, 0));
-        sources.add(new Dipole(2, 0, -1, 0));
+        // initial magnets
+        sources.add(new Dipole(-2, 0, 1, 0, "Magnet 1"));
+        sources.add(new Dipole(2, 0, -1, 0, "Magnet 2"));
 
         JFrame frame = new JFrame("Magnetic Field - Particle Flow");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(900, 900);
 
+        // create panel first
         FieldPanel panel = new FieldPanel(sources);
-        // buttons
-        JButton addBtn = new JButton("Add Magnet");
-        JButton delBtn = new JButton("Delete Magnet");
 
-        addBtn.addActionListener(e -> panel.addMagnet());
-        delBtn.addActionListener(e -> panel.removeSelected());
+        // create control panel (passes panel in)
+        ControlPanel controlPanel = new ControlPanel(panel);
+
+        // link them
+        panel.setControlPanel(controlPanel);
 
         // layout
-        JPanel controls = new JPanel();
-        controls.add(addBtn);
-        controls.add(delBtn);
-
-        frame.setLayout(new java.awt.BorderLayout());
-        frame.add(panel, java.awt.BorderLayout.CENTER);
-        frame.add(controls, java.awt.BorderLayout.SOUTH);
-
-        frame.setVisible(true);
-        frame.add(panel);
+        frame.setLayout(new BorderLayout());
+        frame.add(panel, BorderLayout.CENTER);
+        frame.add(controlPanel, BorderLayout.SOUTH); // <-- bottom
 
         frame.setVisible(true);
     }

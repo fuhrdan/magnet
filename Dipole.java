@@ -1,16 +1,19 @@
 package magnet;
 
+
 public class Dipole implements FieldSource
 {
     double x, y;
     double mx, my;
+    public String name;
 
-    public Dipole(double x, double y, double mx, double my)
+    public Dipole(double x, double y, double mx, double my, String name)
     {
         this.x = x;
         this.y = y;
         this.mx = mx;
         this.my = my;
+        this.name = name;
     }
 
     public Vec2 getField(double px, double py)

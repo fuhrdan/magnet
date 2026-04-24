@@ -1,7 +1,7 @@
 # Magnetic Field Visualizer (Java)
 
 An interactive magnetic field simulator built in Java using Swing.  It's fun
-
+![Demo](screenshot.png)
 ## Features
 
 - Real-time magnetic field visualization
