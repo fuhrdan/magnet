@@ -7,6 +7,7 @@ import java.text.DecimalFormat;
 public class ControlPanel extends JPanel
 {
     private Dipole selected;
+    private FieldPanel panel;
 
     private JTextField nameField = new JTextField(8);
     private JTextField xField = new JTextField(6);
@@ -14,10 +15,15 @@ public class ControlPanel extends JPanel
     private JTextField strengthField = new JTextField(6);
     private JTextField angleField = new JTextField(6);
 
+    private JButton saveBtn = new JButton("Save");
+    private JButton loadBtn = new JButton("Load");
+
     private DecimalFormat fmt = new DecimalFormat("0.0000");
 
     public ControlPanel(FieldPanel panel)
     {
+        this.panel = panel;
+
         setLayout(new FlowLayout(FlowLayout.LEFT));
 
         JButton addBtn = new JButton("Add");
@@ -25,6 +31,8 @@ public class ControlPanel extends JPanel
 
         add(addBtn);
         add(delBtn);
+        add(saveBtn);
+        add(loadBtn);
 
         add(new JLabel("Name:"));
         add(nameField);
@@ -48,7 +56,30 @@ public class ControlPanel extends JPanel
         delBtn.addActionListener(e -> panel.removeSelected());
         applyBtn.addActionListener(e -> applyChanges());
 
-        setVisible(false);
+        saveBtn.addActionListener(e -> saveToFile());
+        loadBtn.addActionListener(e -> loadFromFile());
+
+        setVisible(true);
+    }
+
+    private void saveToFile()
+    {
+        JFileChooser chooser = new JFileChooser();
+
+        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION)
+        {
+            panel.saveToFile(chooser.getSelectedFile().getAbsolutePath());
+        }
+    }
+
+    private void loadFromFile()
+    {
+        JFileChooser chooser = new JFileChooser();
+
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
+        {
+            panel.loadFromFile(chooser.getSelectedFile().getAbsolutePath());
+        }
     }
 
     public void setSelected(Dipole d)
@@ -57,7 +88,7 @@ public class ControlPanel extends JPanel
 
         if (d == null)
         {
-            setVisible(false);
+            setVisible(true);
             return;
         }
 

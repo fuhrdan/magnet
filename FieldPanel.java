@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
 
+import java.io.*;
+
 public class FieldPanel extends JPanel implements 
     MouseListener, 
     MouseMotionListener, 
@@ -109,6 +111,62 @@ public void setControlPanel(ControlPanel cp)
                 selectedIndex = Math.min(selectedIndex, sources.size() - 1);
                 controlPanel.setSelected(getSelected());
             }
+        }
+    }
+
+    public void saveToFile(String filename)
+    {
+        try (PrintWriter out = new PrintWriter(new FileWriter(filename)))
+        {
+            for (FieldSource s : sources)
+            {
+                Dipole d = (Dipole)s;
+
+                out.printf("%s %.4f %.4f %.4f %.4f%n",
+                    d.name.replace(" ", "_"),
+                    d.x,
+                    d.y,
+                    d.mx,
+                    d.my
+                );
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadFromFile(String filename)
+    {
+        try (BufferedReader br = new BufferedReader(new FileReader(filename)))
+        {
+            sources.clear();
+
+            String line;
+            while ((line = br.readLine()) != null)
+            {
+                String[] parts = line.split(" ");
+
+                if (parts.length != 5) continue;
+
+                String name = parts[0].replace("_", " ");
+                double x = Double.parseDouble(parts[1]);
+                double y = Double.parseDouble(parts[2]);
+                double mx = Double.parseDouble(parts[3]);
+                double my = Double.parseDouble(parts[4]);
+
+                sources.add(new Dipole(x, y, mx, my, name));
+            }
+
+            selectedIndex = -1;
+            controlPanel.setSelected(null);
+
+            repaint();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
         }
     }
 
