@@ -19,6 +19,7 @@ public class ControlPanel extends JPanel
     private JButton loadBtn = new JButton("Load");
 
     private DecimalFormat fmt = new DecimalFormat("0.0000");
+    private JCheckBox gridCheck = new JCheckBox("Field Grid");
 
     public ControlPanel(FieldPanel panel)
     {
@@ -33,6 +34,9 @@ public class ControlPanel extends JPanel
         add(delBtn);
         add(saveBtn);
         add(loadBtn);
+
+        add(gridCheck);
+        gridCheck.setSelected(true);
 
         add(new JLabel("Name:"));
         add(nameField);
@@ -102,6 +106,11 @@ public class ControlPanel extends JPanel
         yField.setText(fmt.format(d.y));
         strengthField.setText(fmt.format(strength));
         angleField.setText(fmt.format(angle));
+    }
+
+    public boolean isGridEnabled()
+    {
+        return gridCheck.isSelected();
     }
 
     private void applyChanges()

@@ -31,6 +31,8 @@ public class FieldPanel extends JPanel implements
     private int selectedIndex = -1;
     private int magnetCounter = 1;
 
+    private int gridSize = 25;
+
 public FieldPanel(List<FieldSource> sources)
 {
     this.sources = sources;
@@ -182,6 +184,14 @@ public void setControlPanel(ControlPanel cp)
         int width = getWidth();
         int height = getHeight();
 
+        // =========================
+        // FIELD GRID VISUALIZATION
+        // =========================
+        if (controlPanel != null && controlPanel.isGridEnabled())
+        {
+            drawFieldGrid(g2);
+        }
+
         // draw particles
         g2.setColor(Color.green);
 
@@ -281,6 +291,41 @@ public void setControlPanel(ControlPanel cp)
                 selectedIndex = (selectedIndex + 1) % sources.size();
                 controlPanel.setSelected(getSelected());
                 repaint();
+            }
+        }
+    }
+
+    private void drawFieldGrid(Graphics2D g2)
+    {
+        int width = getWidth();
+        int height = getHeight();
+
+        double scale = 30.0;
+        double vectorScale = 12.0;
+
+        g2.setColor(new Color(80, 200, 255, 120));
+
+        for (int x = 0; x < width; x += gridSize)
+        {
+            for (int y = 0; y < height; y += gridSize)
+            {
+                double wx = (x - width / 2.0) / scale;
+                double wy = (y - height / 2.0) / scale;
+
+                Vec2 f = Main.totalField(wx, wy, sources);
+
+                double len = Math.sqrt(f.x * f.x + f.y * f.y);
+
+                if (len > 0.00001)
+                {
+                    double fx = f.x / len;
+                    double fy = f.y / len;
+
+                    int x2 = (int)(x + fx * vectorScale);
+                    int y2 = (int)(y + fy * vectorScale);
+
+                    g2.drawLine(x, y, x2, y2);
+                }
             }
         }
     }
