@@ -36,7 +36,7 @@ public class ControlPanel extends JPanel
         add(loadBtn);
 
         add(gridCheck);
-        gridCheck.setSelected(true);
+        gridCheck.setSelected(false);
 
         add(new JLabel("Name:"));
         add(nameField);

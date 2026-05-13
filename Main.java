@@ -16,7 +16,7 @@ public class Main
 
         JFrame frame = new JFrame("Magnetic Field - Particle Flow");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(900, 900);
+        frame.setSize(1200, 900);
 
         // create panel first
         FieldPanel panel = new FieldPanel(sources);
